@@ -1,0 +1,14 @@
+{
+  "name": "claude-mcp-chatbot-minimal",
+  "version": "1.0.0",
+  "description": "Minimal Claude chatbot with MCP support for learning",
+  "main": "chatbot-minimal.js",
+  "type": "module",
+  "scripts": {
+    "start": "node chatbot-minimal.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.27.0",
+    "@modelcontextprotocol/sdk": "^0.5.0"
+  }
+}
