@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "vonage": {
+      "command": "npx",
+      "args": ["-y", "@vonage/vonage-mcp-server-api-bindings"],
+      "env": {
+        "VONAGE_API_KEY": "abcd",
+        "VONAGE_API_SECRET": "1234"
+      }
+    }
+  }
+}
