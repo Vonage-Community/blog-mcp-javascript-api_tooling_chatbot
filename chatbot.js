@@ -26,6 +26,7 @@ class ClaudeChatbot {
 
   async start() {
     console.log('🤖 Claude Chatbot with MCP Support');
+    console.log('Type "models" to see available Claude models');
     console.log('Type "exit" to quit\n');
     
     if (!process.env.ANTHROPIC_API_KEY) {
@@ -97,6 +98,12 @@ class ClaudeChatbot {
           break;
         }
 
+        // Check for models command
+        if (userInput.toLowerCase().trim() === 'models') {
+          await this.showAvailableModelsFromAPI();
+          continue;
+        }
+
         if (!userInput.trim()) continue;
 
         this.conversationHistory.push({
@@ -119,6 +126,68 @@ class ClaudeChatbot {
     
     await this.cleanup();
     this.rl.close();
+  }
+
+  async showAvailableModelsFromAPI() {
+    console.log('🤖 Querying Anthropic API for available models...');
+    console.log('');
+    console.log(`🎯 Currently using: ${this.model}`);
+    console.log('');
+    
+    try {
+      // Query the Anthropic API for available models
+      const response = await fetch('https://api.anthropic.com/v1/models', {
+        headers: {
+          'x-api-key': process.env.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.data && Array.isArray(data.data)) {
+        console.log('✅ Available Models from Anthropic API:');
+        
+        // Sort models by name for better readability
+        const sortedModels = data.data.sort((a, b) => a.id.localeCompare(b.id));
+        
+        // Group models by family
+        const claudeModels = sortedModels.filter(model => model.id.startsWith('claude-'));
+        
+        claudeModels.forEach(model => {
+          const isCurrent = model.id === this.model;
+          const marker = isCurrent ? '🎯' : '  •';
+          console.log(`${marker} ${model.id}`);
+          if (model.display_name && model.display_name !== model.id) {
+            console.log(`    Display name: ${model.display_name}`);
+          }
+        });
+        
+        console.log('');
+        console.log('🔧 To change the model:');
+        console.log('   export CLAUDE_MODEL=model-name');
+        
+      } else {
+        throw new Error('Unexpected API response format');
+      }
+      
+    } catch (error) {
+      console.log('❌ Failed to fetch models from API:', error.message);
+      console.log('');
+      console.log('📋 Fallback - Common Model Patterns:');
+      console.log('  • claude-3-opus-20240229');
+      console.log('  • claude-3-sonnet-20240229');
+      console.log('  • claude-3-haiku-20240307');
+      console.log('  • claude-3-5-sonnet-* (if available)');
+      console.log('');
+      console.log('💡 Try these patterns with current dates for newer models');
+    }
+    
+    console.log();
   }
 
   async getClaudeResponse() {
